@@ -1,0 +1,4 @@
+Employees are entitled to 12 days of paid leave annually.
+Leave requests must be submitted at least 2 days in advance.
+Emergency leave can be requested in urgent situations.
+Unused leave cannot be carried forward.
