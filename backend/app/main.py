@@ -1,6 +1,6 @@
 from fastapi import FastAPI
 from pydantic import BaseModel
-from fastapi.middleware.cors import CORSMiddleware
+from app.services.loader import load_documents
 
 app = FastAPI()
 
@@ -23,6 +23,11 @@ class QueryResponse(BaseModel):
 @app.get("/") 
 def root():
     return {"message": "Well, Backend is working"}
+
+
+@app.get("/load-test")
+def test_loader():
+    return load_documents()
 
 @app.post("/query", response_model=QueryResponse)
 def query_api(data: QueryRequest):
