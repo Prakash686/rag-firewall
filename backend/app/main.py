@@ -1,9 +1,16 @@
 from fastapi import FastAPI
 from pydantic import BaseModel
+from fastapi.middleware.cors import CORSMiddleware
 from app.services.loader import load_documents
+from app.services.chunker import chunk_documents
+from app.services.vector_store import VectorStore
 
 app = FastAPI()
+vector_store = VectorStore()
 
+docs = load_documents()
+chunks = chunk_documents(docs)
+vector_store.build_index(chunks)
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -11,6 +18,8 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+
 
 class QueryRequest(BaseModel):
     query: str
@@ -25,14 +34,21 @@ def root():
     return {"message": "Well, Backend is working"}
 
 
-@app.get("/load-test")
-def test_loader():
-    return load_documents()
+
+
+
 
 @app.post("/query", response_model=QueryResponse)
 def query_api(data: QueryRequest):
+
+    retrieved_chunks = vector_store.search(data.query)
+
+    chunk_texts = [c["text"] for c in retrieved_chunks]
+
+    answer = " ".join(chunk_texts)
+
     return {
-        "answer": "This is a sample answer",
-        "chunks": ["chunk1","chunk2"],
+        "answer": answer,
+        "chunks": chunk_texts,
         "blocked_chunks": []
     }
