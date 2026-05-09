@@ -4,6 +4,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from app.services.loader import load_documents
 from app.services.chunker import chunk_documents
 from app.services.vector_store import VectorStore
+from app.services.groqservice import generate_answer
 
 app = FastAPI()
 vector_store = VectorStore()
@@ -45,7 +46,7 @@ def query_api(data: QueryRequest):
 
     chunk_texts = [c["text"] for c in retrieved_chunks]
 
-    answer = " ".join(chunk_texts)
+    answer =generate_answer(data.query,chunk_texts)
 
     return {
         "answer": answer,
