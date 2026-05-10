@@ -38,7 +38,6 @@ def root():
 
 
 
-
 @app.post("/query", response_model=QueryResponse)
 def query_api(data: QueryRequest):
 

@@ -17,8 +17,10 @@ def chunk_documents(documents,chunk_size=3,overlap=1):
             chunk_sentences = sentences[start:end]
             chunk_text = " ".join(chunk_sentences)
             chunks.append({
-                "text":chunk_text,
-                "source": filename
-            })
+                    "id": f"{filename}_{start}",
+                     "text": chunk_text,
+                     "source": filename,
+                    "chunk_index": start
+                })
             start += chunk_size - overlap
     return chunks
