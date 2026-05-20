@@ -286,8 +286,8 @@ export default function Home() {
 
                   <p className="text-zinc-400 text-[13px] leading-7 whitespace-pre-wrap mb-4">{chunk}</p>
 
-                  <div className="flex items-center gap-2 border-t border-white/[0.05] pt-3 text-[11px] text-zinc-700">
-                    <span className="w-1 h-1 rounded-full bg-zinc-700" />
+                  <div className="flex items-center gap-2 border-t border-white/[0.08] pt-3 text-[12px] text-zinc-400">
+                    <span className="w-1.5 h-1.5 rounded-full bg-zinc-500" />
                     Source: Pending
                   </div>
                 </div>
