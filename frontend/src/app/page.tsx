@@ -12,188 +12,380 @@ export default function Home() {
 
   const sendQuery = async () => {
     if (!query.trim()) return;
-
     setLoading(true);
     setError("");
-
     try {
       const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/query`, {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ query }),
       });
-
       const data = await res.json();
-
       setResponse(data.answer);
       setChunks(data.chunks || []);
       setBlockedChunks(data.blocked_chunks || []);
     } catch (error) {
       setError("Backend Unavailable");
     }
-
     setLoading(false);
   };
 
   return (
-    <main className="min-h-screen bg-black text-white flex items-center justify-center p-6">
-      <div className="w-full max-w-4xl bg-zinc-900 rounded-2xl shadow-2xl border border-zinc-700 p-6">
+    <main className="min-h-screen bg-[#050508] text-white flex items-center justify-center p-6 relative overflow-hidden">
 
-        {/* Header */}
-        <div className="mb-6 border-b border-zinc-700 pb-4">
-          <h1 className="text-4xl font-bold text-center text-blue-400">
-            RAG Firewall
-          </h1>
+      {/* Grid background */}
+      <div className="fixed inset-0 pointer-events-none"
+        style={{
+          backgroundImage: `linear-gradient(rgba(59,130,246,0.04) 1px, transparent 1px),
+                            linear-gradient(90deg, rgba(59,130,246,0.04) 1px, transparent 1px)`,
+          backgroundSize: "48px 48px",
+        }}
+      />
 
-          <p className="text-center text-zinc-400 mt-2">
-            Retrieval-Augmented Generation Security System
-          </p>
-        </div>
+      {/* Ambient blobs */}
+      <div className="fixed top-[-15%] left-[-10%] w-[600px] h-[600px] rounded-full pointer-events-none animate-pulse"
+        style={{ background: "radial-gradient(circle, rgba(59,130,246,0.12), transparent 70%)" }}
+      />
+      <div className="fixed bottom-[-20%] right-[-10%] w-[700px] h-[700px] rounded-full pointer-events-none"
+        style={{
+          background: "radial-gradient(circle, rgba(99,102,241,0.1), transparent 70%)",
+          animation: "pulse 10s ease-in-out infinite",
+        }}
+      />
 
-        {/* Input Section */}
-        <div className="flex gap-3 mb-6">
-          <input
-            type="text"
-            disabled={loading}
-            placeholder="Ask something..."
-            value={query}
-            onChange={(e) => setQuery(e.target.value)}
-            onKeyDown={(e) => {
-              if (e.key === "Enter") sendQuery();
-            }}
-            className="flex-1 p-3 rounded-xl bg-zinc-800 border border-zinc-600 text-white placeholder-zinc-400 outline-none focus:border-blue-500"
+      {/* Main card */}
+      <div className="relative z-10 w-full max-w-4xl">
+        <div
+          className="relative rounded-[28px] p-8 transition-all duration-500 group/card"
+          style={{
+            background: "rgba(17,17,27,0.85)",
+            backdropFilter: "blur(24px)",
+            border: "1px solid rgba(255,255,255,0.07)",
+            boxShadow: "0 0 0 1px rgba(255,255,255,0.03), 0 40px 100px rgba(0,0,0,0.7), inset 0 1px 0 rgba(255,255,255,0.06)",
+          }}
+        >
+          {/* Top shimmer line */}
+          <div className="absolute top-0 left-[10%] right-[10%] h-px rounded-full pointer-events-none"
+            style={{ background: "linear-gradient(90deg, transparent, rgba(99,179,255,0.4), transparent)" }}
           />
 
-          <button
-            onClick={sendQuery}
-            disabled={loading}
-            className="bg-blue-600 hover:bg-blue-700 transition px-6 py-3 rounded-xl font-semibold"
-          >
-            {loading ? (
-              <div className="flex items-center gap-2">
-                <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+          {/* Header */}
+          <div className="mb-8 pb-7 border-b border-white/[0.05] text-center">
+            <div className="flex justify-center mb-4">
+              <span className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full text-[11px] font-semibold tracking-widest uppercase"
+                style={{
+                  background: "rgba(59,130,246,0.1)",
+                  border: "1px solid rgba(59,130,246,0.22)",
+                  color: "#60a5fa",
+                }}
+              >
+                <span className="w-1.5 h-1.5 rounded-full bg-blue-400 animate-pulse"
+                  style={{ boxShadow: "0 0 6px #60a5fa" }}
+                />
+                Security Layer Active
+              </span>
+            </div>
 
-                <span>Generating response...</span>
-              </div>
-            ) : (
-              "Send"
-            )}
-          </button>
-        </div>
+            <h1 className="text-[42px] font-extrabold tracking-[-1.5px] leading-none"
+              style={{
+                background: "linear-gradient(135deg, #fff 0%, #bfdbfe 50%, #60a5fa 100%)",
+                WebkitBackgroundClip: "text",
+                WebkitTextFillColor: "transparent",
+                backgroundClip: "text",
+              }}
+            >
+              RAG Firewall
+            </h1>
 
-        {error && (
-          <div className="bg-red-950 border border-red-700 text-red-300 rounded-xl p-4 mb-6">
-            {error}
-          </div>
-        )}
-
-        {/* Answer Section */}
-        <div className="bg-zinc-800 rounded-2xl p-6 border border-zinc-700 shadow-lg mb-6">
-          <div className="flex items-center gap-2 mb-4">
-            <div className="w-3 h-3 rounded-full bg-blue-400"></div>
-
-            <h2 className="text-2xl font-bold text-blue-400">
-              AI Response
-            </h2>
-          </div>
-
-          <div className="prose prose-invert max-w-none">
-            <p className="text-zinc-200 text-lg leading-8 whitespace-pre-wrap">
-              {response || "Your response will appear here..."}
+            <p className="text-zinc-500 text-[13px] mt-2.5 tracking-wide">
+              Retrieval-Augmented Generation Security System
             </p>
           </div>
-        </div>
 
-        {/* Retrieved Chunks */}
-        <div className="mb-6">
-          <div className="flex items-center gap-2 mb-4">
-            <div className="w-3 h-3 rounded-full bg-green-400"></div>
+          {/* Input Section */}
+          <div className="flex gap-3 mb-8">
+            <div className="relative flex-1 group/input">
+              <input
+                type="text"
+                disabled={loading}
+                placeholder="Ask something..."
+                value={query}
+                onChange={(e) => setQuery(e.target.value)}
+                onKeyDown={(e) => { if (e.key === "Enter") sendQuery(); }}
+                className="w-full py-3.5 px-5 rounded-[16px] text-white text-sm outline-none transition-all duration-250 disabled:opacity-50"
+                style={{
+                  background: "rgba(39,39,55,0.6)",
+                  border: "1px solid rgba(255,255,255,0.08)",
+                  caretColor: "#60a5fa",
+                }}
+                onFocus={(e) => {
+                  e.target.style.background = "rgba(39,39,55,0.9)";
+                  e.target.style.borderColor = "rgba(59,130,246,0.45)";
+                  e.target.style.boxShadow = "0 0 0 3px rgba(59,130,246,0.1), 0 0 20px rgba(59,130,246,0.05)";
+                }}
+                onBlur={(e) => {
+                  e.target.style.background = "rgba(39,39,55,0.6)";
+                  e.target.style.borderColor = "rgba(255,255,255,0.08)";
+                  e.target.style.boxShadow = "none";
+                }}
+              />
+            </div>
 
-            <h2 className="text-2xl font-bold text-green-400">
-              Retrieved Chunks
-            </h2>
+            <button
+              onClick={sendQuery}
+              disabled={loading}
+              className="relative px-7 py-3.5 rounded-[16px] font-semibold text-sm text-white overflow-hidden transition-all duration-200 disabled:opacity-60 disabled:cursor-not-allowed active:scale-[0.97]"
+              style={{
+                background: "#2563eb",
+                boxShadow: "0 0 20px rgba(37,99,235,0.45), inset 0 1px 0 rgba(255,255,255,0.15)",
+              }}
+              onMouseEnter={(e) => {
+                (e.currentTarget as HTMLButtonElement).style.background = "#1d4ed8";
+                (e.currentTarget as HTMLButtonElement).style.boxShadow = "0 0 40px rgba(37,99,235,0.7), 0 0 80px rgba(37,99,235,0.2), inset 0 1px 0 rgba(255,255,255,0.2)";
+                (e.currentTarget as HTMLButtonElement).style.transform = "translateY(-2px)";
+              }}
+              onMouseLeave={(e) => {
+                (e.currentTarget as HTMLButtonElement).style.background = "#2563eb";
+                (e.currentTarget as HTMLButtonElement).style.boxShadow = "0 0 20px rgba(37,99,235,0.45), inset 0 1px 0 rgba(255,255,255,0.15)";
+                (e.currentTarget as HTMLButtonElement).style.transform = "translateY(0)";
+              }}
+            >
+              {/* Shimmer overlay */}
+              <span className="absolute inset-0 rounded-[16px] pointer-events-none"
+                style={{ background: "linear-gradient(180deg, rgba(255,255,255,0.12) 0%, transparent 60%)" }}
+              />
+              <span className="relative">
+                {loading ? (
+                  <span className="flex items-center gap-2">
+                    <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                    Generating...
+                  </span>
+                ) : "Send →"}
+              </span>
+            </button>
           </div>
 
-          <div className="space-y-4">
-            {chunks.length > 0 ? (
-              chunks.map((chunk, index) => (
+          {/* Error */}
+          {error && (
+            <div className="flex items-center gap-3 rounded-2xl p-4 mb-6 text-sm"
+              style={{
+                background: "rgba(220,38,38,0.07)",
+                border: "1px solid rgba(248,113,113,0.2)",
+                color: "#f87171",
+              }}
+            >
+              <span className="w-2 h-2 rounded-full bg-red-400 shrink-0 animate-pulse" />
+              {error}
+            </div>
+          )}
+
+          {/* AI Response */}
+          <div className="mb-7">
+            <div className="flex items-center gap-2.5 mb-3">
+              <span className="w-2 h-2 rounded-full bg-blue-400 shrink-0"
+                style={{ boxShadow: "0 0 10px rgba(96,165,250,0.9)" }}
+              />
+              <h2 className="text-[11px] font-bold tracking-[0.12em] uppercase text-blue-400">
+                AI Response
+              </h2>
+            </div>
+
+            <div
+              className="relative rounded-[20px] p-6 pl-7 overflow-hidden transition-all duration-300 cursor-default group/ai"
+              style={{
+                background: "rgba(30,30,46,0.5)",
+                border: "1px solid rgba(255,255,255,0.06)",
+              }}
+              onMouseEnter={(e) => {
+                (e.currentTarget as HTMLDivElement).style.borderColor = "rgba(96,165,250,0.25)";
+                (e.currentTarget as HTMLDivElement).style.background = "rgba(30,30,46,0.75)";
+                (e.currentTarget as HTMLDivElement).style.boxShadow = "0 0 40px rgba(59,130,246,0.07), inset 0 0 30px rgba(59,130,246,0.02)";
+              }}
+              onMouseLeave={(e) => {
+                (e.currentTarget as HTMLDivElement).style.borderColor = "rgba(255,255,255,0.06)";
+                (e.currentTarget as HTMLDivElement).style.background = "rgba(30,30,46,0.5)";
+                (e.currentTarget as HTMLDivElement).style.boxShadow = "none";
+              }}
+            >
+              {/* Left accent line */}
+              <span className="absolute left-0 top-[15%] bottom-[15%] w-[2px] rounded-r-full transition-all duration-300"
+                style={{ background: "linear-gradient(180deg, transparent, rgba(96,165,250,0.6), transparent)" }}
+              />
+              <p className="text-zinc-300 text-[15px] leading-8 whitespace-pre-wrap">
+                {response || <span className="text-zinc-600 italic text-sm">Your response will appear here...</span>}
+              </p>
+            </div>
+          </div>
+
+          {/* Divider */}
+          <div className="my-6 h-px"
+            style={{ background: "linear-gradient(90deg, transparent, rgba(255,255,255,0.05), transparent)" }}
+          />
+
+          {/* Retrieved Chunks */}
+          <div className="mb-6">
+            <div className="flex items-center gap-2.5 mb-4">
+              <span className="w-2 h-2 rounded-full bg-emerald-400 shrink-0"
+                style={{ boxShadow: "0 0 10px rgba(52,211,153,0.9)" }}
+              />
+              <h2 className="text-[11px] font-bold tracking-[0.12em] uppercase text-emerald-400">
+                Retrieved Chunks
+              </h2>
+              {chunks.length > 0 && (
+                <span className="ml-auto text-[11px] font-semibold px-2.5 py-0.5 rounded-full"
+                  style={{ background: "rgba(52,211,153,0.1)", border: "1px solid rgba(52,211,153,0.2)", color: "#34d399" }}
+                >
+                  {chunks.length}
+                </span>
+              )}
+            </div>
+
+            <div className="space-y-3">
+              {chunks.length > 0 ? chunks.map((chunk, index) => (
                 <div
                   key={index}
-                  className="bg-zinc-800 border border-zinc-700 rounded-2xl p-5 shadow-lg"
+                  className="relative rounded-[18px] p-5 overflow-hidden transition-all duration-[280ms] cursor-default group/chunk"
+                  style={{
+                    background: "rgba(24,24,38,0.5)",
+                    border: "1px solid rgba(255,255,255,0.06)",
+                  }}
+                  onMouseEnter={(e) => {
+                    const el = e.currentTarget as HTMLDivElement;
+                    el.style.borderColor = "rgba(52,211,153,0.28)";
+                    el.style.background = "rgba(24,24,38,0.85)";
+                    el.style.transform = "translateY(-2px)";
+                    el.style.boxShadow = "0 10px 40px rgba(0,0,0,0.35), 0 0 0 1px rgba(52,211,153,0.1)";
+                  }}
+                  onMouseLeave={(e) => {
+                    const el = e.currentTarget as HTMLDivElement;
+                    el.style.borderColor = "rgba(255,255,255,0.06)";
+                    el.style.background = "rgba(24,24,38,0.5)";
+                    el.style.transform = "translateY(0)";
+                    el.style.boxShadow = "none";
+                  }}
                 >
+                  {/* Left hover accent */}
+                  <span className="absolute left-0 top-[18%] bottom-[18%] w-[2px] rounded-r-full transition-all duration-300 opacity-0 group-hover/chunk:opacity-100"
+                    style={{ background: "linear-gradient(180deg, transparent, rgba(52,211,153,0.8), transparent)" }}
+                  />
+                  {/* Top glow on hover */}
+                  <span className="absolute inset-x-0 top-0 h-px opacity-0 group-hover/chunk:opacity-100 transition-opacity duration-300"
+                    style={{ background: "linear-gradient(90deg, transparent, rgba(52,211,153,0.3), transparent)" }}
+                  />
+
                   <div className="flex items-center justify-between mb-3">
-                    <span className="text-sm font-semibold text-blue-400">
+                    <span className="text-[11px] font-bold text-emerald-400/70 uppercase tracking-[0.1em]">
                       Chunk {index + 1}
                     </span>
-
-                    <span className="text-xs bg-yellow-500/20 text-yellow-300 px-3 py-1 rounded-full">
-                      Risk Score: Pending
+                    <span className="text-[11px] font-semibold px-2.5 py-0.5 rounded-full"
+                      style={{ background: "rgba(251,191,36,0.1)", border: "1px solid rgba(251,191,36,0.2)", color: "#fbbf24" }}
+                    >
+                      Risk: Pending
                     </span>
                   </div>
 
-                  <p className="text-zinc-300 leading-7 whitespace-pre-wrap mb-4">
-                    {chunk}
-                  </p>
+                  <p className="text-zinc-400 text-[13px] leading-7 whitespace-pre-wrap mb-4">{chunk}</p>
 
-                  <div className="border-t border-zinc-700 pt-3 text-sm text-zinc-400">
+                  <div className="flex items-center gap-2 border-t border-white/[0.05] pt-3 text-[11px] text-zinc-700">
+                    <span className="w-1 h-1 rounded-full bg-zinc-700" />
                     Source: Pending
                   </div>
                 </div>
-              ))
-            ) : (
-              <p className="text-zinc-500">
-                No chunks retrieved yet.
-              </p>
-            )}
-          </div>
-        </div>
-
-        {/* Blocked Chunks */}
-        <div>
-          <div className="flex items-center gap-2 mb-4">
-            <div className="w-3 h-3 rounded-full bg-red-400"></div>
-
-            <h2 className="text-2xl font-bold text-red-400">
-              Blocked Chunks
-            </h2>
+              )) : (
+                <div className="text-zinc-600 text-sm py-1 pl-1 flex items-center gap-2">
+                  <span className="w-1.5 h-1.5 rounded-full bg-zinc-800" />
+                  No chunks retrieved yet.
+                </div>
+              )}
+            </div>
           </div>
 
-          <div className="space-y-4">
-            {blockedChunks.length > 0 ? (
-              blockedChunks.map((chunk, index) => (
+          {/* Divider */}
+          <div className="my-6 h-px"
+            style={{ background: "linear-gradient(90deg, transparent, rgba(255,255,255,0.05), transparent)" }}
+          />
+
+          {/* Blocked Chunks */}
+          <div>
+            <div className="flex items-center gap-2.5 mb-4">
+              <span className="w-2 h-2 rounded-full bg-red-400 shrink-0"
+                style={{ boxShadow: "0 0 10px rgba(248,113,113,0.9)" }}
+              />
+              <h2 className="text-[11px] font-bold tracking-[0.12em] uppercase text-red-400">
+                Blocked Chunks
+              </h2>
+              {blockedChunks.length > 0 && (
+                <span className="ml-auto text-[11px] font-semibold px-2.5 py-0.5 rounded-full"
+                  style={{ background: "rgba(248,113,113,0.1)", border: "1px solid rgba(248,113,113,0.2)", color: "#f87171" }}
+                >
+                  {blockedChunks.length}
+                </span>
+              )}
+            </div>
+
+            <div className="space-y-3">
+              {blockedChunks.length > 0 ? blockedChunks.map((chunk, index) => (
                 <div
                   key={index}
-                  className="bg-red-950 border border-red-700 rounded-2xl p-5 shadow-lg"
+                  className="relative rounded-[18px] p-5 overflow-hidden transition-all duration-[280ms] cursor-default group/blocked"
+                  style={{
+                    background: "rgba(28,10,10,0.6)",
+                    border: "1px solid rgba(248,113,113,0.12)",
+                  }}
+                  onMouseEnter={(e) => {
+                    const el = e.currentTarget as HTMLDivElement;
+                    el.style.borderColor = "rgba(248,113,113,0.32)";
+                    el.style.transform = "translateY(-2px)";
+                    el.style.boxShadow = "0 10px 40px rgba(220,38,38,0.18), 0 0 0 1px rgba(248,113,113,0.15)";
+                  }}
+                  onMouseLeave={(e) => {
+                    const el = e.currentTarget as HTMLDivElement;
+                    el.style.borderColor = "rgba(248,113,113,0.12)";
+                    el.style.transform = "translateY(0)";
+                    el.style.boxShadow = "none";
+                  }}
                 >
-                  <div className="flex items-center justify-between mb-3">
-                    <span className="text-sm font-semibold text-red-300">
+                  {/* Inner red gradient */}
+                  <span className="absolute inset-0 pointer-events-none"
+                    style={{ background: "linear-gradient(135deg, rgba(220,38,38,0.08) 0%, transparent 55%)" }}
+                  />
+                  {/* Top shimmer on hover */}
+                  <span className="absolute inset-x-0 top-0 h-px opacity-0 group-hover/blocked:opacity-100 transition-opacity duration-300"
+                    style={{ background: "linear-gradient(90deg, transparent, rgba(248,113,113,0.35), transparent)" }}
+                  />
+
+                  <div className="relative flex items-center justify-between mb-3">
+                    <span className="text-[11px] font-bold text-red-400/70 uppercase tracking-[0.1em]">
                       Blocked Chunk {index + 1}
                     </span>
-
-                    <span className="text-xs bg-red-500/20 text-red-300 px-3 py-1 rounded-full">
+                    <span className="flex items-center gap-1.5 text-[11px] font-semibold px-2.5 py-0.5 rounded-full"
+                      style={{ background: "rgba(248,113,113,0.12)", border: "1px solid rgba(248,113,113,0.22)", color: "#f87171" }}
+                    >
+                      <span className="w-1.5 h-1.5 rounded-full bg-red-400 animate-pulse" />
                       Blocked
                     </span>
                   </div>
 
-                  <p className="text-red-200 leading-7 whitespace-pre-wrap">
-                    {chunk}
-                  </p>
+                  <p className="relative text-red-300/60 text-[13px] leading-7 whitespace-pre-wrap">{chunk}</p>
                 </div>
-              ))
-            ) : (
-              <div className="bg-zinc-800 border border-zinc-700 rounded-2xl p-5">
-                <p className="text-zinc-400">
+              )) : (
+                <div className="rounded-[18px] p-5 flex items-center gap-2 text-zinc-600 text-[13px]"
+                  style={{ background: "rgba(17,17,27,0.3)", border: "1px solid rgba(255,255,255,0.04)" }}
+                >
+                  <span className="w-1.5 h-1.5 rounded-full bg-zinc-800" />
                   No blocked chunks
-                </p>
-              </div>
-            )}
+                </div>
+              )}
+            </div>
           </div>
+
         </div>
 
+        {/* Footer */}
+        <p className="text-center text-zinc-800 text-[11px] mt-4 tracking-widest uppercase">
+          Powered by RAG · Secured by Firewall
+        </p>
       </div>
     </main>
   );
 }
-
