@@ -6,7 +6,9 @@ export default function Home() {
   const [query, setQuery] = useState("");
   const [response, setResponse] = useState("");
   const [chunks, setChunks] = useState<string[]>([]);
-  const [blockedChunks, setBlockedChunks] = useState<string[]>([]);
+  const [blockedChunks, setBlockedChunks] = useState<
+  { text: string; matches: string[] }[]
+      >([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
@@ -325,6 +327,7 @@ export default function Home() {
 
             <div className="space-y-3">
               {blockedChunks.length > 0 ? blockedChunks.map((chunk, index) => (
+
                 <div
                   key={index}
                   className="relative rounded-[18px] p-5 overflow-hidden transition-all duration-[280ms] cursor-default group/blocked"
@@ -366,7 +369,16 @@ export default function Home() {
                     </span>
                   </div>
 
-                  <p className="relative text-red-300/60 text-[13px] leading-7 whitespace-pre-wrap">{chunk}</p>
+                  <div className="relative">
+
+             <p className="text-red-300/60 text-[13px] leading-7 whitespace-pre-wrap mb-3">
+            {chunk.text}
+            </p>
+
+           <div className="text-[11px] text-red-400">
+             Matches: {chunk.matches.join(", ")}
+             </div>
+                  </div>
                 </div>
               )) : (
                 <div className="rounded-[18px] p-5 flex items-center gap-2 text-zinc-600 text-[13px]"

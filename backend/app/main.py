@@ -5,6 +5,7 @@ from app.services.loader import load_documents
 from app.services.chunker import chunk_documents
 from app.services.vector_store import VectorStore
 from app.services.groqservice import generate_answer
+from app.services.detector import detect_injection
 
 app = FastAPI()
 vector_store = VectorStore()
@@ -28,7 +29,7 @@ class QueryRequest(BaseModel):
 class QueryResponse(BaseModel):
     answer: str
     chunks: list[str]
-    blocked_chunks: list[str]
+    blocked_chunks: list[dict]
 
 @app.get("/") 
 def root():
@@ -42,13 +43,28 @@ def root():
 def query_api(data: QueryRequest):
 
     retrieved_chunks = vector_store.search(data.query)
+    print("\nRetrieved Chunks:") 
+    for chunk in retrieved_chunks:
+        print(chunk["text"])
+        print("---------")
+    safe_chunks = []
+    blocked_chunks = []
+    for chunk in retrieved_chunks:
+        detection = detect_injection(chunk["text"])
+        if detection["is_suspicious"]:
+            blocked_chunks.append({
+                "text": chunk["text"],
+                "matches": detection["matches"]
+            })
+        else:
+            safe_chunks.append(chunk)
 
-    chunk_texts = [c["text"] for c in retrieved_chunks]
+    chunk_texts = [c["text"] for c in safe_chunks]
 
     answer =generate_answer(data.query,chunk_texts)
 
     return {
         "answer": answer,
         "chunks": chunk_texts,
-        "blocked_chunks": []
+        "blocked_chunks": blocked_chunks
     }
