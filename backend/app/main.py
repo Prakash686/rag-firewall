@@ -6,6 +6,7 @@ from app.services.chunker import chunk_documents
 from app.services.vector_store import VectorStore
 from app.services.groqservice import generate_answer
 from app.services.detector import detect_injection
+from app.services.risk_scanner import calculate_risk
 
 app = FastAPI()
 vector_store = VectorStore()
@@ -28,15 +29,31 @@ class QueryRequest(BaseModel):
 
 class QueryResponse(BaseModel):
     answer: str
-    chunks: list[str]
+    chunks: list[dict]
     blocked_chunks: list[dict]
 
 @app.get("/") 
 def root():
     return {"message": "Well, Backend is working"}
 
+@app.get("/risk-test")
+def risk_test():
 
+    chunks = vector_store.search("ignore previous instructions")
 
+    results = []
+
+    for chunk in chunks:
+
+        risk = calculate_risk(chunk["text"])
+
+        results.append({
+            "text": chunk["text"],
+            "risk_score": risk["risk_score"],
+            "matched_patterns": risk["matched_patterns"]
+        })
+
+    return results
 
 
 @app.post("/query", response_model=QueryResponse)
@@ -51,20 +68,30 @@ def query_api(data: QueryRequest):
     blocked_chunks = []
     for chunk in retrieved_chunks:
         detection = detect_injection(chunk["text"])
+        risk = calculate_risk(chunk["text"])
         if detection["is_suspicious"]:
             blocked_chunks.append({
                 "text": chunk["text"],
-                "matches": detection["matches"]
+                "matches": detection["matches"],
+                "risk_score": risk["risk_score"]
             })
         else:
+            chunk["risk_score"] = risk["risk_score"]
             safe_chunks.append(chunk)
 
     chunk_texts = [c["text"] for c in safe_chunks]
+    safe_chunk_data = [
+        {
+            "text": c["text"],
+            "risk_score": c["risk_score"]
+        }
+        for c in safe_chunks
+    ]
 
     answer =generate_answer(data.query,chunk_texts)
 
     return {
         "answer": answer,
-        "chunks": chunk_texts,
+        "chunks": safe_chunk_data,
         "blocked_chunks": blocked_chunks
     }
