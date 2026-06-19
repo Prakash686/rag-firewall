@@ -5,10 +5,16 @@ import { useState } from "react";
 export default function Home() {
   const [query, setQuery] = useState("");
   const [response, setResponse] = useState("");
-  const [chunks, setChunks] = useState<string[]>([]);
+  const [chunks, setChunks] = useState<
+  { text: string; risk_score: number }[]
+>([]);
   const [blockedChunks, setBlockedChunks] = useState<
-  { text: string; matches: string[] }[]
-      >([]);
+  {
+    text: string;
+    matches: string[];
+    risk_score: number;
+  }[]
+>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
@@ -276,17 +282,21 @@ export default function Home() {
                   />
 
                   <div className="flex items-center justify-between mb-3">
-                    <span className="text-[11px] font-bold text-emerald-400/70 uppercase tracking-[0.1em]">
-                      Chunk {index + 1}
-                    </span>
-                    <span className="text-[11px] font-semibold px-2.5 py-0.5 rounded-full"
-                      style={{ background: "rgba(251,191,36,0.1)", border: "1px solid rgba(251,191,36,0.2)", color: "#fbbf24" }}
+                    <span
+                      className="text-[11px] font-semibold px-2.5 py-0.5 rounded-full"
+                      style={{
+                        background: "rgba(251,191,36,0.1)",
+                        border: "1px solid rgba(251,191,36,0.2)",
+                        color: "#fbbf24"
+                      }}
                     >
-                      Risk: Pending
+                      Risk: {chunk.risk_score.toFixed(2)}
                     </span>
                   </div>
 
-                  <p className="text-zinc-400 text-[13px] leading-7 whitespace-pre-wrap mb-4">{chunk}</p>
+                  <p className="text-zinc-400 text-[13px] leading-7 whitespace-pre-wrap mb-4">
+                    {chunk.text}
+                  </p>
 
                   <div className="flex items-center gap-2 border-t border-white/[0.08] pt-3 text-[12px] text-zinc-400">
                     <span className="w-1.5 h-1.5 rounded-full bg-zinc-500" />
@@ -375,9 +385,9 @@ export default function Home() {
             {chunk.text}
             </p>
 
-           <div className="text-[11px] text-red-400">
-             Matches: {chunk.matches.join(", ")}
-             </div>
+           <div className="text-[11px] text-amber-400 mt-2">
+             Risk Score: {chunk.risk_score.toFixed(2)}
+           </div>
                   </div>
                 </div>
               )) : (
