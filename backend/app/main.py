@@ -7,13 +7,17 @@ from app.services.vector_store import VectorStore
 from app.services.groqservice import generate_answer
 from app.services.detector import detect_injection
 from app.services.risk_scanner import calculate_risk
+from app.services.bm25_store import BM25Store
+
 
 app = FastAPI()
 vector_store = VectorStore()
+bm25_store = BM25Store()
 
 docs = load_documents()
 chunks = chunk_documents(docs)
 vector_store.build_index(chunks)
+bm25_store.build_index(chunks)  
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -55,11 +59,25 @@ def risk_test():
 
     return results
 
+@app.get("/bm25-test") 
+def bm25_test(query:str):
+    results = bm25_store.search(query)
+    return results
+
 
 @app.post("/query", response_model=QueryResponse)
 def query_api(data: QueryRequest):
 
-    retrieved_chunks = vector_store.search(data.query)
+    faiss_chunks = vector_store.search(data.query)
+    bm25_chunks = bm25_store.search(data.query)
+    retrieved_chunks = []
+    seen = set()
+
+    for chunk in faiss_chunks + bm25_chunks:
+        if chunk["id"] not in seen:
+            retrieved_chunks.append(chunk)
+            seen.add(chunk["id"])
+
     print("\nRetrieved Chunks:") 
     for chunk in retrieved_chunks:
         print(chunk["text"])
