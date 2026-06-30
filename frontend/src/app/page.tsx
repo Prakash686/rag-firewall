@@ -11,19 +11,6 @@ type BlockedChunk = { text: string; matches: string[]; risk_score: number };
 const fontDisplay = "'Space Grotesk', ui-sans-serif, sans-serif";
 const fontMono = "'JetBrains Mono', ui-monospace, monospace";
 
-function getRiskLevel(score: number) {
-  if (score >= 0.8) {
-    return { label: "High", color: "#f87171", bg: "rgba(248,113,113,0.1)", border: "rgba(248,113,113,0.2)" };
-  }
-  if (score >= 0.5) {
-    return { label: "Medium", color: "#fbbf24", bg: "rgba(251,191,36,0.12)", border: "rgba(251,191,36,0.22)" };
-  }
-  if (score > 0) {
-    return { label: "Low", color: "#fbbf24", bg: "rgba(251,191,36,0.08)", border: "rgba(251,191,36,0.16)" };
-  }
-  return { label: "Clean", color: "#34d399", bg: "rgba(52,211,153,0.1)", border: "rgba(52,211,153,0.2)" };
-}
-
 export default function Home() {
   const [query, setQuery] = useState("");
   const [response, setResponse] = useState("");
@@ -398,7 +385,6 @@ export default function Home() {
 
               <div className="space-y-3">
                 {chunks.length > 0 ? chunks.map((chunk, index) => {
-                  const level = getRiskLevel(chunk.risk_score);
                   return (
                     <div
                       key={index}
@@ -431,27 +417,26 @@ export default function Home() {
                         style={{ background: "linear-gradient(90deg, transparent, rgba(52,211,153,0.3), transparent)" }}
                       />
 
-                      <div className="flex items-center justify-between mb-3">
-                        <span
-                          className="text-[11px] font-semibold px-2.5 py-0.5 rounded-full"
-                          style={{
-                            fontFamily: fontMono,
-                            background: level.bg,
-                            border: `1px solid ${level.border}`,
-                            color: level.color,
-                          }}
-                        >
-                          {level.label} · {chunk.risk_score.toFixed(2)}
-                        </span>
-                      </div>
-
                       <p className="text-zinc-400 text-[13px] leading-7 whitespace-pre-wrap mb-4">
                         {chunk.text}
                       </p>
 
-                      <div className="flex items-center gap-2 border-t border-white/[0.08] pt-3 text-[11px] text-zinc-500" style={{ fontFamily: fontMono }}>
-                        <span className="w-1.5 h-1.5 rounded-full bg-zinc-600" />
-                        Source attribution — coming soon
+                      <div className="flex items-center justify-between border-t border-white/[0.08] pt-3">
+                        <span
+                          className="text-[11px] font-semibold px-2.5 py-0.5 rounded-full"
+                          style={{
+                            fontFamily: fontMono,
+                            background: "rgba(251,191,36,0.1)",
+                            border: "1px solid rgba(251,191,36,0.2)",
+                            color: "#fbbf24",
+                          }}
+                        >
+                          Risk: {chunk.risk_score.toFixed(2)}
+                        </span>
+                        <span className="flex items-center gap-2 text-[11px] text-zinc-500" style={{ fontFamily: fontMono }}>
+                          <span className="w-1.5 h-1.5 rounded-full bg-zinc-600" />
+                          Source — coming soon
+                        </span>
                       </div>
                     </div>
                   );
@@ -489,7 +474,6 @@ export default function Home() {
 
               <div className="space-y-3">
                 {blockedChunks.length > 0 ? blockedChunks.map((chunk, index) => {
-                  const level = getRiskLevel(chunk.risk_score);
                   return (
                     <div
                       key={index}
@@ -565,12 +549,12 @@ export default function Home() {
                           className="inline-flex items-center text-[11px] font-semibold px-2.5 py-0.5 rounded-full"
                           style={{
                             fontFamily: fontMono,
-                            background: level.bg,
-                            border: `1px solid ${level.border}`,
-                            color: level.color,
+                            background: "rgba(251,191,36,0.1)",
+                            border: "1px solid rgba(251,191,36,0.2)",
+                            color: "#fbbf24",
                           }}
                         >
-                          {level.label} Risk · {chunk.risk_score.toFixed(2)}
+                          Risk: {chunk.risk_score.toFixed(2)}
                         </span>
                       </div>
                     </div>
