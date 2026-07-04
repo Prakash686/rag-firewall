@@ -1,5 +1,6 @@
 import os
-from app.services.sanitizer import sanitize_text
+from app.services.sanitizer import sanitize
+
 
 def load_documents():
     documents = []
@@ -16,7 +17,7 @@ def load_documents():
             file_path = os.path.join(data_path, filename)
 
             with open(file_path, "r", encoding="utf-8") as f:
-                text = sanitize_text(f.read())
+                text = sanitize(f.read())
 
                 documents.append({
                     "filename": filename,

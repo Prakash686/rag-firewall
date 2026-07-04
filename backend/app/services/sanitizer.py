@@ -1,37 +1,47 @@
-STEP 5 — Firewall v1
+import re
+import unicodedata
 
-5.1 Retrieval Sanitization
-    • HTML cleaning
-    • Unicode normalization
-    • Zero-width character removal
-    • Markdown cleanup
 
-5.2 Instruction Detection
-    • Regex signatures
-    • Prompt injection detection
-    • Dangerous keyword detection
-    • Attack pattern classification
+def remove_html(text):
+    clean = re.sub(r"<[^>]+>", "", text)
+    return clean
 
-5.3 Risk Scoring
-    • Signature score
-    • Unicode score
-    • HTML score
-    • Trust score
-    • Final risk score
 
-5.4 Mitigation Logic
-    • Allow
-    • Redact
-    • Block
+def normalize_unicode(text):
+    return unicodedata.normalize("NFKC", text)
 
-5.5 Origin Tracing
-    • User query
-    • Retrieved chunk
-    • Source identification
 
-5.6 Firewall Integration
-    • Run all layers together
-    • Produce firewall decision
-    • Return safe chunks + blocked chunks + metadata
+def remove_zero_width(text):
 
-✅ STEP 5 COMPLETE
+    zero_width_chars = [
+        "\u200B",
+        "\u200C",
+        "\u200D",
+        "\uFEFF"
+    ]
+
+    for char in zero_width_chars:
+        text = text.replace(char, "")
+
+    return text
+
+
+def clean_markdown(text):
+
+    text = re.sub(r"#+\s*", "", text)
+    text = re.sub(r"\*\*(.*?)\*\*", r"\1", text)
+    text = re.sub(r"\*(.*?)\*", r"\1", text)
+    text = re.sub(r"`(.*?)`", r"\1", text)
+    text = re.sub(r">\s*", "", text)
+
+    return text
+
+
+def sanitize(text):
+
+    text = remove_html(text)
+    text = normalize_unicode(text)
+    text = remove_zero_width(text)
+    text = clean_markdown(text)
+
+    return text

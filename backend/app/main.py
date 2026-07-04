@@ -8,7 +8,7 @@ from app.services.groqservice import generate_answer
 from app.services.detector import detect_injection
 from app.services.risk_scanner import calculate_risk
 from app.services.bm25_store import BM25Store
-
+from app.services.sanitizer import sanitize
 
 app = FastAPI()
 vector_store = VectorStore()
@@ -85,15 +85,17 @@ def query_api(data: QueryRequest):
     safe_chunks = []
     blocked_chunks = []
     for chunk in retrieved_chunks:
-        detection = detect_injection(chunk["text"])
-        risk = calculate_risk(chunk["text"])
+        clean_text = sanitize(chunk["text"])
+        detection = detect_injection(clean_text)
+        risk = calculate_risk(clean_text)
         if detection["is_suspicious"]:
             blocked_chunks.append({
-                "text": chunk["text"],
+                "text": clean_text,
                 "matches": detection["matches"],
                 "risk_score": risk["risk_score"]
             })
         else:
+            chunk["text"] = clean_text
             chunk["risk_score"] = risk["risk_score"]
             safe_chunks.append(chunk)
 
