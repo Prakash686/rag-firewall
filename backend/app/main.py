@@ -69,7 +69,7 @@ def bm25_test(query:str):
 def query_api(data: QueryRequest):
 
     faiss_chunks = vector_store.search(data.query)
-    bm25_chunks = bm25_store.search(data.query)
+    bm25_chunks = bm25_store.search(data.query) 
     retrieved_chunks = []
     seen = set()
 

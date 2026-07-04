@@ -1,13 +1,37 @@
-import re
-import unicodedata
+STEP 5 — Firewall v1
 
+5.1 Retrieval Sanitization
+    • HTML cleaning
+    • Unicode normalization
+    • Zero-width character removal
+    • Markdown cleanup
 
-def sanitize_text(text):
+5.2 Instruction Detection
+    • Regex signatures
+    • Prompt injection detection
+    • Dangerous keyword detection
+    • Attack pattern classification
 
-    text = unicodedata.normalize("NFKC", text)
+5.3 Risk Scoring
+    • Signature score
+    • Unicode score
+    • HTML score
+    • Trust score
+    • Final risk score
 
-    text = re.sub(r'[\u200B-\u200D\uFEFF]', '', text)
+5.4 Mitigation Logic
+    • Allow
+    • Redact
+    • Block
 
-    text = re.sub(r'\s+', ' ', text)
+5.5 Origin Tracing
+    • User query
+    • Retrieved chunk
+    • Source identification
 
-    return text.strip()
+5.6 Firewall Integration
+    • Run all layers together
+    • Produce firewall decision
+    • Return safe chunks + blocked chunks + metadata
+
+✅ STEP 5 COMPLETE
