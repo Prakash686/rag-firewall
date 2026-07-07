@@ -78,7 +78,7 @@ def query_api(data: QueryRequest):
             retrieved_chunks.append(chunk)
             seen.add(chunk["id"])
 
-    print("\nRetrieved Chunks:") 
+    print("\nretrieved Chunks:") 
     for chunk in retrieved_chunks:
         print(chunk["text"])
         print("---------")
@@ -87,25 +87,32 @@ def query_api(data: QueryRequest):
     for chunk in retrieved_chunks:
         clean_text = sanitize(chunk["text"])
         detection = detect_injection(clean_text)
-        risk = calculate_risk(clean_text)
+        risk = calculate_risk(
+            clean_text,
+            detection["categories"],
+            detection["match_count"]
+        )
         if detection["is_suspicious"]:
             blocked_chunks.append({
                 "text": clean_text,
                 "matches": detection["matches"],
                 "categories": detection["categories"],
                 "risk_score": risk["risk_score"],
+                "risk_level": risk["risk_level"],
                 "match_count": detection["match_count"]
             })
         else:
             chunk["text"] = clean_text
             chunk["risk_score"] = risk["risk_score"]
+            chunk["risk_level"] = risk["risk_level"]
             safe_chunks.append(chunk)
 
     chunk_texts = [c["text"] for c in safe_chunks]
     safe_chunk_data = [
         {
             "text": c["text"],
-            "risk_score": c["risk_score"]
+            "risk_score": c["risk_score"],
+            "risk_level": c["risk_level"]
         }
         for c in safe_chunks
     ]
