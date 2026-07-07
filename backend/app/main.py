@@ -92,7 +92,9 @@ def query_api(data: QueryRequest):
             blocked_chunks.append({
                 "text": clean_text,
                 "matches": detection["matches"],
-                "risk_score": risk["risk_score"]
+                "categories": detection["categories"],
+                "risk_score": risk["risk_score"],
+                "match_count": detection["match_count"]
             })
         else:
             chunk["text"] = clean_text
