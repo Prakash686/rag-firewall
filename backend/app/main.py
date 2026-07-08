@@ -9,7 +9,7 @@ from app.services.detector import detect_injection
 from app.services.risk_scanner import calculate_risk
 from app.services.bm25_store import BM25Store
 from app.services.sanitizer import sanitize
-
+from app.services.mitigation import mitigation_decision
 app = FastAPI()
 vector_store = VectorStore()
 bm25_store = BM25Store()
@@ -69,7 +69,13 @@ def bm25_test(query:str):
 def query_api(data: QueryRequest):
 
     faiss_chunks = vector_store.search(data.query)
-    bm25_chunks = bm25_store.search(data.query) 
+
+        
+
+
+    bm25_chunks = bm25_store.search(data.query)
+       
+
     retrieved_chunks = []
     seen = set()
 
@@ -92,7 +98,8 @@ def query_api(data: QueryRequest):
             detection["categories"],
             detection["match_count"]
         )
-        if detection["is_suspicious"]:
+        decision = mitigation_decision(risk["risk_score"])
+        if decision == "BLOCK":
             blocked_chunks.append({
                 "text": clean_text,
                 "matches": detection["matches"],
@@ -117,6 +124,7 @@ def query_api(data: QueryRequest):
         for c in safe_chunks
     ]
 
+    
     answer =generate_answer(data.query,chunk_texts)
 
     return {
