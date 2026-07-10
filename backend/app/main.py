@@ -99,9 +99,12 @@ def query_api(data: QueryRequest):
             detection["match_count"]
         )
         decision = mitigation_decision(risk["risk_score"])
-        if decision == "BLOCK":
+        if decision["action"] == "BLOCK":
             blocked_chunks.append({
                 "text": clean_text,
+                "source": chunk["source"],
+                "chunk_id": chunk["id"],
+                "chunk_index": chunk["chunk_index"],
                 "matches": detection["matches"],
                 "categories": detection["categories"],
                 "risk_score": risk["risk_score"],
@@ -118,6 +121,9 @@ def query_api(data: QueryRequest):
     safe_chunk_data = [
         {
             "text": c["text"],
+            "source": c["source"],
+            "chunk_id": c["id"],
+            "chunk_index": c["chunk_index"],
             "risk_score": c["risk_score"],
             "risk_level": c["risk_level"]
         }
