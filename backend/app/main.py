@@ -5,14 +5,13 @@ from app.services.loader import load_documents
 from app.services.chunker import chunk_documents
 from app.services.vector_store import VectorStore
 from app.services.groqservice import generate_answer
-from app.services.detector import detect_injection
 from app.services.risk_scanner import calculate_risk
 from app.services.bm25_store import BM25Store
-from app.services.sanitizer import sanitize
-from app.services.mitigation import mitigation_decision
+from app.services.firewall import Firewall
 app = FastAPI()
 vector_store = VectorStore()
 bm25_store = BM25Store()
+firewall = Firewall()
 
 docs = load_documents()
 chunks = chunk_documents(docs)
@@ -76,35 +75,45 @@ def query_api(data: QueryRequest):
     bm25_chunks = bm25_store.search(data.query)
        
 
-    retrieved_chunks = []
-    seen = set()
+    retrieved_chunks = {}
 
-    for chunk in faiss_chunks + bm25_chunks:
-        if chunk["id"] not in seen:
-            retrieved_chunks.append(chunk)
-            seen.add(chunk["id"])
+    for chunk in faiss_chunks:
+        new_chunk = chunk.copy()
+        new_chunk["retriever"] = "faiss"
+        retrieved_chunks[chunk["id"]] = new_chunk
+
+    for chunk in bm25_chunks:
+        if chunk["id"] in retrieved_chunks:
+            retrieved_chunks[chunk["id"]]["retriever"] = "Hybrid"
+
+        else:
+            new_chunk = chunk.copy()
+            new_chunk["retriever"] = "BM25"
+            retrieved_chunks[chunk["id"]] = new_chunk
+
+    retrieved_chunks = list(retrieved_chunks.values())
+
 
     print("\nretrieved Chunks:") 
     for chunk in retrieved_chunks:
         print(chunk["text"])
+        print(chunk["retriever"])
         print("---------")
     safe_chunks = []
     blocked_chunks = []
     for chunk in retrieved_chunks:
-        clean_text = sanitize(chunk["text"])
-        detection = detect_injection(clean_text)
-        risk = calculate_risk(
-            clean_text,
-            detection["categories"],
-            detection["match_count"]
-        )
-        decision = mitigation_decision(risk["risk_score"])
+        result = firewall.scan_chunk(chunk)
+        clean_text = result["clean_text"]
+        detection = result["detection"]
+        risk = result["risk"]
+        decision = result["decision"]
         if decision["action"] == "BLOCK":
             blocked_chunks.append({
                 "text": clean_text,
                 "source": chunk["source"],
                 "chunk_id": chunk["id"],
                 "chunk_index": chunk["chunk_index"],
+                "retriever": chunk["retriever"],
                 "matches": detection["matches"],
                 "categories": detection["categories"],
                 "risk_score": risk["risk_score"],
@@ -124,6 +133,7 @@ def query_api(data: QueryRequest):
             "source": c["source"],
             "chunk_id": c["id"],
             "chunk_index": c["chunk_index"],
+            "retriever": c["retriever"],
             "risk_score": c["risk_score"],
             "risk_level": c["risk_level"]
         }
